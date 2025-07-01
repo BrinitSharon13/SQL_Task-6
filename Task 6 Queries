@@ -1,0 +1,74 @@
+USE employee;
+
+/*Show employee name and their department name using subquery*/
+SELECT E.ENAME,D.DNAME
+FROM EMP E JOIN DEPT D
+ON E.DEPTNO = D.DEPTNO;
+
+/*List employees whose salary is above the average salary*/
+SELECT * 
+FROM EMP
+WHERE SAL > (SELECT AVG(SAL) FROM EMP);
+
+/*List employees working in departments where the average salary is more than 30,000*/
+SELECT ENAME FROM EMP 
+WHERE DEPTNO IN (SELECT DEPTNO FROM EMP 
+GROUP BY DEPTNO
+HAVING AVG(SAL) > 30000);
+
+/*Show department-wise average salary using a subquery*/
+SELECT dname, avg_sal
+FROM (
+    SELECT deptno, AVG(sal) AS avg_sal
+    FROM emp
+    GROUP BY deptno
+) AS avg_data
+JOIN dept ON dept.deptno = avg_data.deptno;
+
+/*List employees whose salary is greater than the average salary of their department*/
+SELECT ename, sal
+FROM emp e
+WHERE sal > (
+    SELECT AVG(sal)
+    FROM emp
+    WHERE deptno = e.deptno
+);
+
+/*List all employees who belong to an existing department*/
+SELECT ename
+FROM emp e
+WHERE EXISTS (
+    SELECT 1 FROM dept d WHERE d.deptno = e.deptno
+);
+
+/*List employees who are in departments with name starting with 'S'*/
+SELECT ename
+FROM emp
+WHERE deptno IN (
+    SELECT deptno FROM dept WHERE dname LIKE 'S%'
+);
+
+
+/*Show each employee with the company-wide average salary*/
+SELECT ename, sal,
+       (SELECT AVG(sal) FROM emp) AS company_avg_salary
+FROM emp;
+
+/*List employees who earn the highest salary in their department.*/
+SELECT ename, sal, deptno
+FROM emp e
+WHERE sal = (
+    SELECT MAX(sal)
+    FROM emp
+    WHERE deptno = e.deptno
+);
+
+/*Display the names of departments that have more than 2 employees.*/
+SELECT dname
+FROM dept
+WHERE deptno IN (
+    SELECT deptno
+    FROM emp
+    GROUP BY deptno
+    HAVING COUNT(*) > 2
+);
